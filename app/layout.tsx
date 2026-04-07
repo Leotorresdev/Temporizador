@@ -6,7 +6,7 @@ export const metadata = {
   manifest: "/manifest.json",
   themeColor: "#0f172a",
   icons: {
-    icon: "/window.svg",
+    icon: "/tempo.png",
   },
 };
 
