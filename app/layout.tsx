@@ -4,10 +4,15 @@ export const metadata = {
   title: "Temporizador Pomodoro",
   description: "Temporizador Pomodoro con modos de trabajo y descanso.",
   manifest: "/manifest.json",
-  themeColor: "#0f172a",
   icons: {
     icon: "/icono.png",
+    shortcut: "/icono.png",
+    apple: "/icono.png",
   },
+};
+
+export const viewport = {
+  themeColor: "#0f172a",
 };
 
 export default function RootLayout({
