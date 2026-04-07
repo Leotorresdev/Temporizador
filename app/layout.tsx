@@ -1,6 +1,14 @@
 import "./globals.css";
 
-
+export const metadata = {
+  title: "Temporizador Pomodoro",
+  description: "Temporizador Pomodoro con modos de trabajo y descanso.",
+  manifest: "/manifest.json",
+  themeColor: "#0f172a",
+  icons: {
+    icon: "/window.svg",
+  },
+};
 
 export default function RootLayout({
   children,
@@ -8,10 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`h-full antialiased`}
-    >
+    <html lang="es" className={`h-full antialiased`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
