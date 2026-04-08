@@ -23,6 +23,7 @@ export default function TimerModeSelector({ currentMode, onSelectMode, disabled 
             onClick={() => onSelectMode(mode)}
             disabled={disabled}
           >
+            {/* Cada botón selecciona un modo de Pomodoro diferente */}
             {modeData.label}
           </Button>
         );

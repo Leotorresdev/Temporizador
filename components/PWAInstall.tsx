@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BellRing, Download, Smartphone, X } from "lucide-react";
 import { Button } from "./ui/button";
-import { Download, X, Monitor } from "lucide-react";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -13,20 +13,39 @@ export default function PWAInstall() {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstall, setShowInstall] = useState(false);
 
-  const isStandalone = typeof window !== "undefined" ? (
-    window.matchMedia('(display-mode: standalone)').matches ||
-    (window.navigator as { standalone?: boolean }).standalone === true
-  ) : false;
+  // Detectamos si ya corre como app instalada para no duplicar este panel.
+  const isStandalone =
+    typeof window !== "undefined"
+      ? window.matchMedia("(display-mode: standalone)").matches ||
+        (window.navigator as { standalone?: boolean }).standalone === true
+      : false;
 
-  const isIOS = typeof window !== "undefined" ? /iPad|iPhone|iPod/.test(navigator.userAgent) : false;
+  // iOS requiere instrucciones manuales porque no expone beforeinstallprompt.
+  const isIOS =
+    typeof window !== "undefined" ? /iPad|iPhone|iPod/.test(navigator.userAgent) : false;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    // Limpiamos registros viejos y dejamos activo el service worker actual.
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(() => {
-        // no-op
-      });
+      navigator.serviceWorker
+        .getRegistrations()
+        .then((registrations) =>
+          Promise.all(
+            registrations.map((registration) => {
+              if (registration.active?.scriptURL.includes("/sw.js")) {
+                return Promise.resolve();
+              }
+
+              return registration.unregister();
+            }),
+          ),
+        )
+        .then(() => navigator.serviceWorker.register("/sw.js"))
+        .catch(() => {
+          // no-op
+        });
     }
 
     const beforeInstallPromptHandler = (event: Event) => {
@@ -37,21 +56,21 @@ export default function PWAInstall() {
 
     window.addEventListener("beforeinstallprompt", beforeInstallPromptHandler);
 
-    // Mostrar el prompt después de 2 segundos si no se ha mostrado automáticamente
-    const showTimeout = setTimeout(() => {
+    const showTimeout = window.setTimeout(() => {
       setShowInstall(true);
     }, 2000);
 
     return () => {
       window.removeEventListener("beforeinstallprompt", beforeInstallPromptHandler);
-      clearTimeout(showTimeout);
+      window.clearTimeout(showTimeout);
     };
   }, []);
 
   const handleInstall = async () => {
     if (!installPrompt) return;
-    installPrompt.prompt();
+    await installPrompt.prompt();
     const choice = await installPrompt.userChoice;
+
     if (choice.outcome === "accepted") {
       setShowInstall(false);
     }
@@ -61,22 +80,22 @@ export default function PWAInstall() {
     const userAgent = navigator.userAgent;
 
     if (userAgent.includes("Chrome")) {
-      return "En Chrome: haz clic en el ícono de instalación (⊕) en la barra de direcciones, o ve a ⋮ → Instalar aplicación.";
+      return "En Chrome abre el menu del navegador y pulsa Instalar aplicacion.";
     }
 
     if (userAgent.includes("Firefox")) {
-      return "En Firefox: ve a ⋮ → Instalar esta aplicación...";
+      return "En Firefox abre el menu principal y usa Instalar esta aplicacion.";
     }
 
-    if (userAgent.includes("Edge")) {
-      return "En Edge: haz clic en el ícono de aplicación en la barra de direcciones, o ve a ⋮ → Instalar aplicación.";
+    if (userAgent.includes("Edg")) {
+      return "En Edge usa el icono de aplicacion de la barra o el menu y luego Instalar aplicacion.";
     }
 
     if (userAgent.includes("Safari")) {
-      return "En Safari: toca el botón Compartir → Agregar a pantalla de inicio.";
+      return "En Safari toca Compartir y luego Agregar a pantalla de inicio.";
     }
 
-    return "Busca la opción 'Instalar aplicación' o 'Agregar a pantalla de inicio' en el menú de tu navegador.";
+    return "Busca la opcion Instalar aplicacion o Agregar a pantalla de inicio en el menu del navegador.";
   };
 
   if (isStandalone || !showInstall) {
@@ -84,17 +103,16 @@ export default function PWAInstall() {
   }
 
   return (
-    <div className="fixed bottom-6 left-6 z-50 max-w-md rounded-[1.5rem] border border-white/10 bg-slate-950/95 p-5 shadow-[0_30px_90px_-50px_rgba(15,23,42,0.75)] backdrop-blur-xl">
+    <div className="fixed bottom-5 left-5 z-50 max-w-md rounded-[1.75rem] border border-white/10 bg-slate-950/85 p-5 shadow-[0_28px_80px_-40px_rgba(10,16,30,0.88)] backdrop-blur-xl">
       <div className="flex items-start gap-3">
-        <div className="shrink-0">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-500/20">
-            <Monitor className="h-5 w-5 text-cyan-400" />
-          </div>
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-cyan-400/15 ring-1 ring-cyan-300/20">
+          <Smartphone className="h-5 w-5 text-cyan-300" />
         </div>
+
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-slate-100">Instala la aplicación</h3>
-          <p className="mt-1 text-sm text-slate-300">
-            Convierte este temporizador en una aplicación nativa para usarlo sin navegador.
+          <h3 className="text-lg font-semibold text-slate-100">Instala Tempo Flow</h3>
+          <p className="mt-1 text-sm leading-6 text-slate-300">
+            Lleva el dashboard a tu escritorio o movil para abrir tu rutina mas rapido.
           </p>
 
           <div className="mt-4 space-y-3">
@@ -105,27 +123,35 @@ export default function PWAInstall() {
               </Button>
             ) : (
               <div className="rounded-[1rem] border border-slate-700/70 bg-slate-900/90 p-3 text-sm text-slate-300">
-                <p className="font-medium text-slate-100 mb-2">Instrucciones para tu navegador:</p>
+                <p className="mb-2 font-medium text-slate-100">Como instalarla:</p>
                 <p>{getBrowserInstructions()}</p>
-                {isIOS && (
+                {isIOS ? (
                   <p className="mt-2 text-xs text-slate-400">
-                    Nota: En iOS, la aplicación se instalará en la pantalla de inicio.
+                    En iOS la app quedara como acceso directo en la pantalla de inicio.
                   </p>
-                )}
+                ) : null}
               </div>
             )}
 
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowInstall(false)}
-                className="flex-1"
-              >
-                <X className="mr-2 h-4 w-4" />
-                Cerrar
-              </Button>
+            <div className="rounded-[1rem] border border-cyan-400/15 bg-cyan-400/8 p-3 text-sm text-cyan-100">
+              <div className="flex items-center gap-2 font-medium">
+                <BellRing className="h-4 w-4" />
+                Mejor para recordatorios
+              </div>
+              <p className="mt-1 text-cyan-50/80">
+                Instalarla hace mas natural seguir tareas, pomodoros y notificaciones.
+              </p>
             </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowInstall(false)}
+              className="w-full"
+            >
+              <X className="mr-2 h-4 w-4" />
+              Cerrar
+            </Button>
           </div>
         </div>
       </div>

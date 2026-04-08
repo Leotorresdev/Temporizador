@@ -20,6 +20,7 @@ export default function TimerCard({
 }: TimerCardProps) {
   return (
     <div className="rounded-[1.75rem] border border-white/10 bg-slate-900/80 p-6 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]">
+      {/* Tarjeta principal que muestra el tiempo restante y el total */}
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm uppercase tracking-[0.24em] text-slate-400">{modeLabel}</p>

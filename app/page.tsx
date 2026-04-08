@@ -1,13 +1,12 @@
 
-
-import PWAInstall from "../components/PWAInstall";
-import TimerDisplay from "../components/timer/TimerDisplay";
+import ProductivityDashboard from "@/components/dashboard/ProductivityDashboard";
+import PWAInstall from "@/components/PWAInstall";
 
 export default function Home() {
   return (
     <main className="min-h-screen">
       <PWAInstall />
-      <TimerDisplay />
+      <ProductivityDashboard />
     </main>
   );
 }
