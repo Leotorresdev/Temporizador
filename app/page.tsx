@@ -1,12 +1,12 @@
 
-import ProductivityDashboard from "@/components/dashboard/ProductivityDashboard";
 import PWAInstall from "@/components/PWAInstall";
+import ModernPomodoro from "@/components/timer/ModernPomodoro";
 
 export default function Home() {
   return (
     <main className="min-h-screen">
       <PWAInstall />
-      <ProductivityDashboard />
+      <ModernPomodoro />
     </main>
   );
 }
